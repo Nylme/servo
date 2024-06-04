@@ -51,6 +51,8 @@ pub struct Minibrowser {
     load_status: LoadStatus,
 
     status_text: Option<String>,
+
+    favicon_url: Option<String>,
 }
 
 pub enum MinibrowserEvent {
@@ -89,6 +91,7 @@ impl Minibrowser {
             location_dirty: false.into(),
             load_status: LoadStatus::LoadComplete,
             status_text: None,
+            favicon_url: None,
         }
     }
 
@@ -167,6 +170,7 @@ impl Minibrowser {
             last_update,
             location,
             location_dirty,
+            favicon_url,
             ..
         } = self;
         let widget_fbo = *widget_surface_fbo;
@@ -190,6 +194,18 @@ impl Minibrowser {
                                     event_queue.borrow_mut().push(MinibrowserEvent::Go);
                                     location_dirty.set(false);
                                 }
+
+                                let favicon_url = match webviews.current_favicon_url() {
+                                    Some(url) => url,
+                                    None => "".to_string(),
+                                };
+
+                                // TODO: Somehow fetch the image and then dispaly it
+                                // let favicon = ui.add(
+                                //     egui::Image::from_uri(favicon_url)
+                                //         .max_width(30.0)
+                                //         .max_height(30.0),
+                                // );
 
                                 match self.load_status {
                                     LoadStatus::LoadStart => {
@@ -393,6 +409,12 @@ impl Minibrowser {
             _ => false,
         }
     }
+    pub fn update_favicon(&mut self, browser: &mut WebViewManager<dyn WindowPortsMethods>) -> bool {
+        let need_update = self.favicon_url != browser.current_favicon_url();
+        self.favicon_url = browser.current_favicon_url().clone();
+
+        need_update
+    }
 
     /// Updates the spinner from the given [WebViewManager], returning true iff it has changed
     /// (needing an egui update).
@@ -426,6 +448,7 @@ impl Minibrowser {
         //       does not short-circuit.
         self.update_location_in_toolbar(browser) |
             self.update_spinner_in_toolbar(browser) |
-            self.update_status_text(browser)
+            self.update_status_text(browser) |
+            self.update_favicon(browser)
     }
 }

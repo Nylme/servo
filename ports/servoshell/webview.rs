@@ -38,6 +38,8 @@ use crate::window_trait::{WindowPortsMethods, LINE_HEIGHT};
 pub struct WebViewManager<Window: WindowPortsMethods + ?Sized> {
     current_url: Option<ServoUrl>,
     current_url_string: Option<String>,
+    current_favicon_url: Option<String>,
+
     status_text: Option<String>,
 
     /// List of top-level browsing contexts.
@@ -88,6 +90,7 @@ where
             title: None,
             current_url: None,
             current_url_string: None,
+            current_favicon_url: None,
             status_text: None,
             webviews: HashMap::default(),
             creation_order: vec![],
@@ -123,6 +126,10 @@ where
 
     pub fn focused_webview_id(&self) -> Option<WebViewId> {
         self.focused_webview_id
+    }
+
+    pub fn current_favicon_url(&self) -> Option<String> {
+        self.current_favicon_url.clone()
     }
 
     pub fn current_url_string(&self) -> Option<&str> {
@@ -652,7 +659,8 @@ where
                     self.window.set_cursor(cursor);
                 },
                 EmbedderMsg::NewFavicon(_url) => {
-                    // FIXME: show favicons in the UI somehow
+                    self.current_favicon_url = Some(_url.to_string());
+                    need_update = true;
                 },
                 EmbedderMsg::HeadParsed => {
                     self.load_status = LoadStatus::HeadParsed;
