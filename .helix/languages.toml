@@ -1,0 +1,17 @@
+[[language]]
+name = "rust"
+roots = ["Cargo.toml", "Cargo.lock"]
+language-servers = [ "rust-analyzer", "typos" ]
+indent = { tab-width = 4, unit = " " }
+
+[language.formatter]
+command = "rustfmt"
+args = ["--config", "unstable_features=true", "--config", "binop_separator=Back", "--config", "imports_granularity=Module", "--config", "group_imports=StdExternalCrate" ]
+
+[language-server.rust-analyzer]
+provideFormatter = false
+command = "rust-analyzer"
+checkOnSave = { overrideCommand = [ "./mach", "check", "--message-format=json", "--target-dir", "target/lsp"]}
+cargo = { buildScripts = { overrideCommand = [ "./mach", "check", "--message-format=json", "--target-dir", "target/lsp"]}}
+#formatter = { overrideCommand = ["./mach", "fmt"]}
+
